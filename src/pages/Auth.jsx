@@ -15,31 +15,45 @@ const GOOGLE_SVG = (
 );
 
 const Auth = () => {
+  // Trạng thái chuyển đổi giữa Đăng nhập (true) và Đăng ký (false)
   const [isLogin, setIsLogin] = useState(true);
+  // Quản lý các bước trong quá trình Quên mật khẩu:
+  // 0: Không quên mật khẩu (Màn hình chính)
+  // 1: Nhập email gửi OTP
+  // 2: Nhập OTP để xác thực
+  // 3: Thiết lập mật khẩu mới
   const [forgotPasswordStep, setForgotPasswordStep] = useState(0);
   const [generatedOTP, setGeneratedOTP] = useState("");
   const [inputOTP, setInputOTP] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Sử dụng AuthContext để lấy các hàm thực hiện đăng ký, đăng nhập, quên mật khẩu
   const { login, register, loginWithGoogle, resetPassword, checkEmailExists } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Xác định trang đích sau khi đăng nhập thành công (mặc định là trang chủ "/")
   const from = location.state?.from?.pathname || "/";
 
+  // Cấu hình Formik để quản lý Form đăng ký/đăng nhập và validate dữ liệu
   const formik = useFormik({
     initialValues: { name: '', email: '', password: '' },
+    // Yup validation schema: Động theo trạng thái Đăng nhập/Đăng ký/Quên mật khẩu
     validationSchema: Yup.object({
       name: isLogin ? Yup.string() : Yup.string().min(2, 'Tên phải có ít nhất 2 ký tự').required('Vui lòng nhập họ và tên'),
       email: Yup.string().email('Email không đúng định dạng').required('Vui lòng nhập email'),
       password: forgotPasswordStep > 0 ? Yup.string() : Yup.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự').required('Vui lòng nhập mật khẩu')
     }),
     onSubmit: (values) => {
+      // Nếu đang ở bước khôi phục mật khẩu, không thực hiện submit form thông thường
       if (forgotPasswordStep > 0) return;
+      
       if (isLogin) {
+        // Đăng nhập tài khoản
         const result = login(values.email, values.password);
         if (result) {
-          // Redirect admin về dashboard, user thường về trang trước đó
+          // Điều hướng admin về trang dashboard quản lý, user thường về trang trước đó
           if (result.role === 'admin') {
             navigate('/admin/dashboard', { replace: true });
           } else {
@@ -47,10 +61,11 @@ const Auth = () => {
           }
         }
       } else {
+        // Đăng ký tài khoản mới
         const success = register({ name: values.name, email: values.email, password: values.password });
         if (success) {
           toast.success("✨ Đăng ký thành công! Mời bạn đăng nhập.");
-          setIsLogin(true);
+          setIsLogin(true); // Chuyển sang form đăng nhập
           formik.resetForm({ values: { name: '', email: values.email, password: '' } });
         }
       }
@@ -59,32 +74,62 @@ const Auth = () => {
 
   const { values, errors, touched, handleSubmit, getFieldProps, setErrors, setTouched } = formik;
 
+  // Reset các lỗi của Formik khi người dùng chuyển đổi màn hình
   useEffect(() => {
     setErrors({});
     setTouched({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLogin, forgotPasswordStep]);
 
+  // Xử lý Gửi mã OTP giả lập qua giao diện Toast thông báo
   const handleSendOTP = () => {
-    if (!values.email) { toast.warning("Vui lòng nhập Email!"); formik.setFieldTouched('email', true); return; }
-    if (!checkEmailExists(values.email)) { toast.error("Email chưa được đăng ký!"); return; }
+    if (!values.email) { 
+      toast.warning("Vui lòng nhập Email!"); 
+      formik.setFieldTouched('email', true); 
+      return; 
+    }
+    if (!checkEmailExists(values.email)) { 
+      toast.error("Email chưa được đăng ký!"); 
+      return; 
+    }
+    // Tạo mã OTP ngẫu nhiên gồm 6 chữ số
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOTP(otp);
-    setForgotPasswordStep(2);
+    setForgotPasswordStep(2); // Chuyển sang bước nhập OTP
     toast.info(`[Giả lập] Mã OTP: ${otp}`, { autoClose: false, position: 'top-center' });
   };
 
+  // Xác minh mã OTP do người dùng nhập vào có khớp với mã giả lập không
   const handleVerifyOTP = () => {
-    if (inputOTP === generatedOTP) { toast.success("Xác thực thành công!"); setForgotPasswordStep(3); }
-    else toast.error("Mã OTP không chính xác!");
+    if (inputOTP === generatedOTP) { 
+      toast.success("Xác thực thành công!"); 
+      setForgotPasswordStep(3); // Chuyển sang bước đặt lại mật khẩu mới
+    } else {
+      toast.error("Mã OTP không chính xác!");
+    }
   };
 
+  // Xử lý thiết lập mật khẩu mới sau khi xác thực OTP thành công
   const handleSetNewPassword = () => {
-    if (newPassword.length < 6) { toast.error("Mật khẩu mới phải có ít nhất 6 ký tự!"); return; }
-    if (newPassword !== confirmPassword) { toast.error("Mật khẩu xác nhận không khớp!"); return; }
+    if (newPassword.length < 6) { 
+      toast.error("Mật khẩu mới phải có ít nhất 6 ký tự!"); 
+      return; 
+    }
+    if (newPassword !== confirmPassword) { 
+      toast.error("Mật khẩu xác nhận không khớp!"); 
+      return; 
+    }
     const success = resetPassword(values.email, newPassword);
-    if (success) { setForgotPasswordStep(0); setNewPassword(""); setConfirmPassword(""); setInputOTP(""); formik.setFieldValue('password', ''); }
+    if (success) { 
+      // Quay về bước đăng nhập mặc định
+      setForgotPasswordStep(0); 
+      setNewPassword(""); 
+      setConfirmPassword(""); 
+      setInputOTP(""); 
+      formik.setFieldValue('password', ''); 
+    }
   };
+
 
   const inputClass = "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-ivory text-sm placeholder:text-silver-dark/50 focus:outline-none focus:border-gold/40 focus:bg-white/8 transition-all";
 

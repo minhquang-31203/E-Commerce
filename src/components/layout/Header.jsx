@@ -40,38 +40,47 @@ const ICONS = {
 };
 
 const Header = () => {
+  // Lấy trạng thái giỏ hàng, danh sách yêu thích, đơn hàng và người dùng đăng nhập từ Contexts
   const { cartCount } = useCart();
   const { wishlist } = useWishlist();
   const { orders } = useOrders();
   const { user, logout } = useAuth();
 
+  // Trạng thái rung/nẩy của icon giỏ hàng khi có sản phẩm được thêm vào
   const [isBumping, setIsBumping] = useState(false);
+  // Trạng thái đóng/mở menu điều hướng trên thiết bị di động (Mobile Menu)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Theo dõi vị trí cuộn trang (Y > 20px) để thay đổi giao diện Header sang dạng kính mờ (glassmorphism)
   const { isScrolled } = useScrollPosition(20);
 
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Tự động đóng Mobile Menu khi người dùng chuyển trang
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location]);
 
+  // Kích hoạt hiệu ứng chuyển động nẩy (bump) của giỏ hàng khi cartCount thay đổi
   useEffect(() => {
     if (cartCount === 0) return;
     setIsBumping(true);
-    const timer = setTimeout(() => setIsBumping(false), 300);
+    const timer = setTimeout(() => setIsBumping(false), 300); // Hiệu ứng kéo dài 300ms
     return () => clearTimeout(timer);
   }, [cartCount]);
 
+  // Xử lý sự kiện đăng xuất: xóa token/session và điều hướng về trang đăng nhập
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  // Kiểm tra đường dẫn hiện tại có khớp với menu để active item đó trong thanh điều hướng
   const isActive = (path) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
+
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-[1000] h-20 flex items-center justify-between px-6 lg:px-12 transition-all duration-500

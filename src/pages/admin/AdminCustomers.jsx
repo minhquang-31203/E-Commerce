@@ -2,23 +2,42 @@ import React, { useMemo } from 'react';
 import { useOrders } from '../../contexts';
 import { formatPrice } from '../../api';
 
+// Component hiển thị danh sách khách hàng dành cho quản trị viên (Admin)
 const AdminCustomers = () => {
+  // Lấy danh sách toàn bộ đơn hàng từ OrderContext
   const { orders } = useOrders();
 
+  // Nhóm các đơn hàng theo khách hàng và tính toán tổng số đơn hàng, tổng chi tiêu
+  // Sử dụng useMemo để tối ưu hóa hiệu năng, chỉ tính toán lại khi danh sách orders thay đổi
   const customers = useMemo(() => {
     const map = {};
     orders.forEach(order => {
+      // Xác định ID duy nhất của khách hàng (dựa trên customerId hoặc tên người nhận)
       const id = order.customerId || order.shippingInfo?.name || 'unknown';
       const name = order.customerName || order.shippingInfo?.name || 'Khách vãng lai';
+      
+      // Nếu khách hàng chưa tồn tại trong danh sách map, tiến hành khởi tạo thông tin
       if (!map[id]) {
-        map[id] = { id, name, email: order.customerId || '—', totalOrders: 0, totalSpent: 0, lastOrderDate: order.date };
+        map[id] = { 
+          id, 
+          name, 
+          email: order.customerId || '—', 
+          totalOrders: 0, 
+          totalSpent: 0, 
+          lastOrderDate: order.date 
+        };
       }
+      // Cộng dồn số lượng đơn hàng và số tiền đã chi tiêu
       map[id].totalOrders += 1;
       map[id].totalSpent += order.total;
+      // Cập nhật ngày đặt hàng gần nhất (dự án giả lập ngày đặt hàng tăng dần)
       map[id].lastOrderDate = order.date;
     });
+    
+    // Chuyển đối tượng map thành mảng và sắp xếp giảm dần theo tổng số tiền chi tiêu
     return Object.values(map).sort((a, b) => b.totalSpent - a.totalSpent);
   }, [orders]);
+
 
   return (
     <div className="space-y-6 animate-fade-in">
