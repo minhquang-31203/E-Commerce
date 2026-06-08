@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { fetchAllProducts, formatPrice } from '../../api';
 import { toast } from 'react-toastify';
 
-// Dictionary mapping category slugs to premium Vietnamese names
+// Từ điển ánh xạ Category slugs sang tên Tiếng Việt hoàn chỉnh
 const categoryLabels = {
   'all': 'Tất cả sản phẩm',
   'beauty': 'Làm đẹp & Mỹ phẩm',
@@ -31,13 +31,17 @@ const categoryLabels = {
   'womens-watches': 'Đồng hồ Nữ'
 };
 
+// Component Quản lý sản phẩm dành cho Admin (Admin Products Page)
 const AdminProducts = () => {
+  // Trạng thái lưu trữ danh sách sản phẩm, trạng thái tải và từ khóa tìm kiếm
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  
+  // Trạng thái quản lý đối tượng sản phẩm đang được chỉnh sửa (Edit Mode)
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // Load from localStorage or API
+  // Gọi API hoặc lấy từ localStorage danh sách sản phẩm hiện tại
   useEffect(() => {
     const load = async () => {
       try {
@@ -46,7 +50,7 @@ const AdminProducts = () => {
           setProducts(JSON.parse(stored));
         } else {
           const apiProducts = await fetchAllProducts();
-          // Initialize active display status as true by default
+          // Khởi tạo thuộc tính hiển thị (visible) mặc định là true cho tất cả sản phẩm
           const initialized = apiProducts.map(p => ({
             ...p,
             visible: p.visible !== undefined ? p.visible : true
@@ -55,7 +59,7 @@ const AdminProducts = () => {
           localStorage.setItem('admin_products', JSON.stringify(initialized));
         }
       } catch (err) {
-        console.error('Failed to load admin products:', err);
+        console.error('Lỗi khi tải sản phẩm dành cho quản trị viên:', err);
         toast.error('Không thể tải danh sách sản phẩm');
       } finally {
         setLoading(false);
@@ -64,11 +68,13 @@ const AdminProducts = () => {
     load();
   }, []);
 
+  // Hàm helper lưu danh sách sản phẩm mới xuống State và localStorage
   const saveProducts = (updatedList) => {
     setProducts(updatedList);
     localStorage.setItem('admin_products', JSON.stringify(updatedList));
   };
 
+  // Tìm kiếm sản phẩm theo Tên, Danh mục, Thương hiệu hoặc Mô tả chi tiết
   const filtered = useMemo(() => {
     if (!search.trim()) return products;
     const q = search.toLowerCase();
@@ -80,6 +86,7 @@ const AdminProducts = () => {
     );
   }, [products, search]);
 
+  // Bật/Tắt ẩn hiển thị sản phẩm trên cửa hàng (Hiển thị / Ẩn)
   const handleToggleVisibility = (id) => {
     const updated = products.map(p => {
       if (p.id === id) {
@@ -92,10 +99,12 @@ const AdminProducts = () => {
     saveProducts(updated);
   };
 
+  // Mở Popup và gán giá trị sản phẩm được chọn vào editingProduct state
   const handleEditClick = (product) => {
     setEditingProduct({ ...product });
   };
 
+  // Lưu chỉnh sửa thông tin sản phẩm (Validate dữ liệu cơ bản trước khi lưu)
   const handleSaveEdit = (e) => {
     e.preventDefault();
     if (!editingProduct.name.trim()) {
@@ -109,15 +118,17 @@ const AdminProducts = () => {
 
     const updated = products.map(p => p.id === editingProduct.id ? editingProduct : p);
     saveProducts(updated);
-    setEditingProduct(null);
+    setEditingProduct(null); // Đóng modal editor
     toast.success('✨ Đã cập nhật sản phẩm thành công!');
   };
 
+  // Trích xuất danh sách duy nhất các danh mục sản phẩm (sử dụng trong menu select chọn khi edit)
   const uniqueCategories = useMemo(() => {
     const cats = new Set(products.map(p => p.category).filter(Boolean));
     return Array.from(cats);
   }, [products]);
 
+  // Loading skeleton giao diện
   if (loading) {
     return (
       <div className="space-y-4">
@@ -132,7 +143,7 @@ const AdminProducts = () => {
 
   return (
     <div className="space-y-6 animate-fade-in relative">
-      {/* Toolbar */}
+      {/* Khối Tìm kiếm sản phẩm */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-sm w-full">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +159,7 @@ const AdminProducts = () => {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Bảng sản phẩm quản trị (Products Management Table) */}
       <div className="rounded-2xl bg-obsidian/40 border border-white/[0.06] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -168,6 +179,7 @@ const AdminProducts = () => {
                 const isVisible = product.visible !== false;
                 return (
                   <tr key={product.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+                    {/* Hình ảnh đại diện */}
                     <td className="py-3 px-4">
                       <img
                         src={product.img}
@@ -176,23 +188,33 @@ const AdminProducts = () => {
                         loading="lazy"
                       />
                     </td>
+                    
+                    {/* Tên & Hãng sản xuất */}
                     <td className="py-3 px-4">
                       <p className="text-ivory text-xs font-semibold truncate max-w-[150px]">{product.name}</p>
                       <p className="text-silver-dark text-[9px]">{product.brand || 'ECommerce Mall'}</p>
                     </td>
+                    
+                    {/* Danh mục (dịch sang nhãn tiếng Việt tương ứng) */}
                     <td className="py-3 px-4">
                       <span className="px-2 py-0.5 rounded bg-white/5 text-silver text-[10px] uppercase shrink-0">
                         {categoryLabels[product.category] || product.category || '—'}
                       </span>
                     </td>
+                    
+                    {/* Đơn giá bán */}
                     <td className="py-3 px-4">
                       <span className="text-gold text-xs font-bold">{formatPrice(product.price)}</span>
                     </td>
+                    
+                    {/* Mô tả ngắn */}
                     <td className="py-3 px-4">
                       <p className="text-silver text-[11px] truncate max-w-[180px]" title={product.description}>
                         {product.description || 'Chưa có mô tả'}
                       </p>
                     </td>
+                    
+                    {/* Bật/Tắt ẩn hiển thị sản phẩm */}
                     <td className="py-3 px-4">
                       <button
                         onClick={() => handleToggleVisibility(product.id)}
@@ -206,6 +228,8 @@ const AdminProducts = () => {
                         {isVisible ? 'Hiển thị' : 'Ẩn'}
                       </button>
                     </td>
+                    
+                    {/* Sửa thông tin */}
                     <td className="py-3 px-4">
                       <button
                         onClick={() => handleEditClick(product)}
@@ -234,7 +258,7 @@ const AdminProducts = () => {
         Hiển thị {filtered.length} / {products.length} sản phẩm
       </p>
 
-      {/* Editor Modal */}
+      {/* Modal chỉnh sửa chi tiết sản phẩm (Editor Popup Modal) */}
       {editingProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg glass-card rounded-2xl p-6 lg:p-8 animate-scale-in relative border border-white/10 shadow-glow-gold-strong">
@@ -249,6 +273,7 @@ const AdminProducts = () => {
             </h3>
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
+              {/* Nhập Tên */}
               <div>
                 <label className="block text-silver text-xs font-semibold mb-1.5">Tên sản phẩm *</label>
                 <input
@@ -260,6 +285,7 @@ const AdminProducts = () => {
                 />
               </div>
 
+              {/* Nhập Chuyên mục và Giá */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-silver text-xs font-semibold mb-1.5">Danh mục</label>
@@ -287,6 +313,7 @@ const AdminProducts = () => {
                 </div>
               </div>
 
+              {/* Nhập mô tả */}
               <div>
                 <label className="block text-silver text-xs font-semibold mb-1.5">Mô tả sản phẩm</label>
                 <textarea
@@ -297,6 +324,7 @@ const AdminProducts = () => {
                 />
               </div>
 
+              {/* Thiết lập ẩn hiển thị */}
               <div>
                 <label className="block text-silver text-xs font-semibold mb-1.5">Trạng thái hiển thị</label>
                 <select
@@ -309,11 +337,12 @@ const AdminProducts = () => {
                 </select>
               </div>
 
+              {/* Nút bấm Lưu / Hủy */}
               <div className="flex gap-3 justify-end pt-4 border-t border-white/5">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="px-5 py-2.5 rounded-xl border border-white/10 text-ivory text-sm font-semibold hover:bg-white/5 transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl border border-white/10 text-ivory text-sm font-semibold hover:bg-white/5 transition-all cursor-pointer bg-transparent"
                 >
                   Hủy
                 </button>
@@ -333,3 +362,4 @@ const AdminProducts = () => {
 };
 
 export default AdminProducts;
+

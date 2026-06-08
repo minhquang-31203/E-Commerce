@@ -5,19 +5,25 @@ import ProductCard from '../components/common/ProductCard';
 import ProductSkeleton from '../components/common/ProductSkeleton';
 import { useProducts } from '../hooks';
 
+// Component Trang chủ (Home Page)
 const Home = () => {
+  // Sử dụng custom hook useProducts lấy tất cả sản phẩm
   const { products, loading } = useProducts('all');
 
+  // Lọc sản phẩm Siêu Sale (4 sản phẩm đầu có ID <= 4)
   const saleProducts = useMemo(() => products.filter(p => p.id <= 4), [products]);
+  
+  // Lọc sản phẩm Xu hướng/Trending (8 sản phẩm tiếp theo từ ID 5 đến 12)
   const trendingProducts = useMemo(() => products.filter(p => p.id > 4 && p.id <= 12), [products]);
 
   return (
     <div className="bg-obsidian">
+      {/* Banner quảng cáo đặc sắc ở đầu trang */}
       <Banner />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 pb-24">
         
-        {/* Siêu Sale Section */}
+        {/* Khối sản phẩm Siêu Sale (Siêu Sale Section) */}
         <section className="py-16" aria-label="Siêu sale hôm nay">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
             <div>
@@ -36,7 +42,9 @@ const Home = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {loading
+              // Hiển thị 4 thẻ bộ khung tải (Skeleton) nếu đang tải dữ liệu
               ? Array.from({ length: 4 }).map((_, i) => <ProductSkeleton key={i} />)
+              // Hiển thị danh sách sản phẩm Siêu Sale khi tải xong kèm hiệu ứng xuất hiện lần lượt
               : saleProducts.map((product, i) => (
                   <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
                     <ProductCard product={product} />
@@ -46,7 +54,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Tại sao chọn chúng tôi */}
+        {/* Khối "Tại sao chọn chúng tôi" */}
         <section className="py-16" aria-label="Tại sao chọn chúng tôi">
           <h2 className="font-heading text-3xl md:text-4xl font-bold text-ivory text-center">Tại Sao Chọn ECommerce?</h2>
           <p className="text-silver text-center mt-3 text-sm max-w-lg mx-auto">Cam kết mang đến trải nghiệm mua sắm tốt nhất cho bạn.</p>
@@ -67,7 +75,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Trending Products */}
+        {/* Khối sản phẩm Xu hướng (Trending Products) */}
         <section className="py-16" aria-label="Đang được săn đón">
           <div className="text-center mb-12">
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-ivory">Đang Được Săn Đón</h2>
@@ -78,7 +86,9 @@ const Home = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {loading
+              // Hiển thị 8 thẻ bộ khung tải (Skeleton) nếu đang tải dữ liệu
               ? Array.from({ length: 8 }).map((_, i) => <ProductSkeleton key={i} />)
+              // Hiển thị danh sách sản phẩm Đang Săn Đón khi tải xong
               : trendingProducts.map((product, i) => (
                   <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 0.08}s` }}>
                     <ProductCard product={product} />
@@ -88,7 +98,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Testimonials */}
+        {/* Khối ý kiến đánh giá từ khách hàng (Testimonials) */}
         <section className="py-16" aria-label="Đánh giá khách hàng">
           <h2 className="font-heading text-3xl md:text-4xl font-bold text-ivory text-center">Khách Hàng Nói Gì?</h2>
           <p className="text-silver text-center mt-3 text-sm">Hơn 50,000+ khách hàng đã tin tưởng và yêu thích ECommerce.</p>
@@ -103,6 +113,7 @@ const Home = () => {
                 <div className="text-gold text-sm mb-3 tracking-wider">★★★★★</div>
                 <p className="text-silver text-sm leading-relaxed italic mb-5">{t.text}</p>
                 <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                  {/* Avatar tạo từ ký tự đầu viết tắt của tên khách hàng */}
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center text-obsidian text-xs font-bold">{t.initials}</div>
                   <div>
                     <strong className="text-ivory text-sm block">{t.name}</strong>
@@ -114,7 +125,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* CTA */}
+        {/* Khối CTA - Kêu gọi hành động điều hướng cuối trang */}
         <div className="text-center py-10">
           <Link to="/products" className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-sm
             bg-gradient-to-r from-gold to-gold-dark text-obsidian 

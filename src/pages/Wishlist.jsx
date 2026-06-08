@@ -3,9 +3,12 @@ import { useWishlist } from '../contexts';
 import ProductCard from '../components/common/ProductCard';
 import { Link } from 'react-router-dom';
 
+// Component trang Danh sách yêu thích (Wishlist Page)
 const Wishlist = () => {
+  // Lấy danh sách sản phẩm yêu thích từ WishlistContext
   const { wishlist } = useWishlist();
 
+  // Trường hợp chưa yêu thích sản phẩm nào
   if (wishlist.length === 0) {
     return (
       <div className="min-h-screen pt-28 flex items-center justify-center bg-obsidian">
@@ -27,9 +30,15 @@ const Wishlist = () => {
         <h2 className="font-heading text-3xl font-bold text-ivory mb-8 animate-fade-in">
           Sản phẩm bạn đã yêu thích <span className="text-rose">❤️</span>
         </h2>
+        
+        {/* Lưới hiển thị các sản phẩm đã thích */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {wishlist.map((product, i) => (
-            <div key={product.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 0.08}s` }}>
+            <div 
+              key={product.id} 
+              className="animate-fade-in-up" 
+              style={{ animationDelay: `${i * 0.08}s` }} // Tạo hiệu ứng mượt lần lượt xuất hiện
+            >
               <ProductCard product={product} />
             </div>
           ))}

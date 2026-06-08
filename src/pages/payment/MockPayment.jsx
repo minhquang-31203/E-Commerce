@@ -4,14 +4,18 @@ import { useOrders } from '../../contexts';
 import { formatPrice } from '../../api';
 import { toast } from 'react-toastify';
 
+// Component Cổng thanh toán trực tuyến Giả lập (Mock Payment Gateway Page)
 const MockPayment = () => {
+  // Lấy mã orderId từ đường dẫn URL router
   const { orderId } = useParams();
   const navigate = useNavigate();
+  // Lấy danh sách các đơn hàng và hàm update từ OrderContext
   const { orders, updateOrder } = useOrders();
 
-  // Tìm đơn hàng tương ứng
+  // Tìm đơn hàng tương ứng khớp với orderId
   const order = orders.find(o => o.id === orderId);
 
+  // Trường hợp không tìm thấy đơn hàng trên hệ thống
   if (!order) {
     return (
       <div className="min-h-screen pt-28 flex items-center justify-center bg-obsidian text-center">
@@ -27,30 +31,32 @@ const MockPayment = () => {
     );
   }
 
+  // Giả lập hành động người dùng bấm nút: "Thanh toán thành công"
   const handlePaymentSuccess = () => {
     updateOrder(orderId, {
-      paymentStatus: 'paid',
-      orderStatus: 'confirmed',
-      status: 'Hoàn thành' // for backwards compatibility
+      paymentStatus: 'paid',      // Đánh dấu đã thanh toán thành công
+      orderStatus: 'confirmed',   // Chuyển đơn hàng sang đã xác nhận
+      status: 'Hoàn thành'        // Khả năng tương thích ngược
     });
     toast.success("💳 Thanh toán thành công (Giả lập)!");
-    navigate(`/payment/success/${orderId}`);
+    navigate(`/payment/success/${orderId}`); // Chuyển sang màn hình chúc mừng thành công
   };
 
+  // Giả lập hành động người dùng bấm nút: "Thanh toán thất bại"
   const handlePaymentFailed = () => {
     updateOrder(orderId, {
-      paymentStatus: 'failed',
-      orderStatus: 'cancelled',
-      status: 'Đã hủy' // for backwards compatibility
+      paymentStatus: 'failed',     // Đánh dấu thanh toán thất bại
+      orderStatus: 'cancelled',    // Đơn hàng tự động hủy
+      status: 'Đã hủy'             // Khả năng tương thích ngược
     });
     toast.error("❌ Thanh toán thất bại (Giả lập)!");
-    navigate(`/payment/failed/${orderId}`);
+    navigate(`/payment/failed/${orderId}`); // Chuyển sang màn hình báo lỗi thanh toán
   };
 
   return (
     <div className="min-h-screen pt-28 pb-20 bg-obsidian flex items-center justify-center px-6">
       <div className="w-full max-w-2xl glass-card rounded-3xl p-8 lg:p-10 animate-scale-in">
-        {/* Header */}
+        {/* Tiêu đề trang */}
         <div className="text-center mb-8 border-b border-white/5 pb-6">
           <span className="inline-block px-3 py-1 rounded-full bg-gold/10 text-gold text-xs font-semibold mb-3">
             CỔNG THANH TOÁN GIẢ LẬP
@@ -59,7 +65,7 @@ const MockPayment = () => {
           <p className="text-silver-dark text-xs mt-2">Mã giao dịch: <span className="text-gold font-mono font-bold">{orderId}</span></p>
         </div>
 
-        {/* Order Details Summary */}
+        {/* Tóm tắt chi tiết giỏ hàng của đơn hàng cần thanh toán */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div>
             <h3 className="text-ivory text-sm font-semibold mb-4 flex items-center gap-2">
@@ -83,6 +89,7 @@ const MockPayment = () => {
             </div>
           </div>
 
+          {/* Hiển thị số tiền phải trả và thông tin ngân hàng thụ hưởng giả lập */}
           <div className="flex flex-col justify-between p-5 rounded-2xl bg-white/[0.02] border border-white/5">
             <div>
               <span className="text-silver-dark text-xs block mb-1">Số tiền cần thanh toán</span>
@@ -98,7 +105,7 @@ const MockPayment = () => {
           </div>
         </div>
 
-        {/* Buttons Action */}
+        {/* Khối các Nút thao tác xử lý giao dịch */}
         <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/5">
           <button
             onClick={handlePaymentFailed}
@@ -120,3 +127,4 @@ const MockPayment = () => {
 };
 
 export default MockPayment;
+

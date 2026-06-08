@@ -5,7 +5,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css'; 
 import { useProducts, useDebounce } from '../hooks';
 
-// Dictionary mapping category slugs to premium Vietnamese names
+// Bộ từ điển (Dictionary Map) chuyển đổi các nhãn Category slug từ API sang tiếng Việt chuẩn thương hiệu sang trọng
 const categoryLabels = {
   'all': 'Tất cả sản phẩm',
   'beauty': 'Làm đẹp & Mỹ phẩm',
@@ -34,64 +34,83 @@ const categoryLabels = {
   'womens-watches': 'Đồng hồ Nữ'
 };
 
+// Component trang Cửa hàng/Sản phẩm (Products Page) tích hợp bộ lọc nâng cao
 const Products = () => {
-  // Fetch ALL products to get all 100 items from API
+  // Lấy toàn bộ sản phẩm bằng custom hook useProducts
   const { products, loading } = useProducts('all');
   
+  // Trạng thái lưu các điều kiện lọc đầu vào
   const [filters, setFilters] = useState({
     search: '', category: 'all', minPrice: '', maxPrice: '', sort: 'default'
   });
 
-  const MAX_PRICE = 100000000; // 100,000,000 VNĐ to support expensive products
-  const [sliderRange, setSliderRange] = useState([0, MAX_PRICE]); 
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  const MAX_PRICE = 100000000; // Giá tối đa giả định (100,000,000 VNĐ) để tương thích với các sản phẩm xa xỉ
+  const [sliderRange, setSliderRange] = useState([0, MAX_PRICE]); // Trạng thái thanh kéo chỉnh giá [min, max]
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false); // Đóng/mở ngăn lọc trên di động
+  const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại trong phân trang
+  const itemsPerPage = 9; // Giới hạn số lượng sản phẩm hiển thị trên một trang
 
+  // Debounce từ khóa tìm kiếm (trì hoãn 300ms trước khi kích hoạt bộ lọc)
   const debouncedSearch = useDebounce(filters.search, 300);
 
+  // Đưa phân trang về trang 1 mỗi khi thay đổi các điều kiện lọc
   useEffect(() => {
     setCurrentPage(1);
   }, [filters]);
 
+  // Xử lý thay đổi các trường dữ liệu của bộ lọc
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  // Dynamically extract categories present in current loaded products
+  // Trích xuất tự động danh sách các Chuyên mục (Categories) hiện có trong các sản phẩm đã tải về
   const uniqueCategories = useMemo(() => {
     const cats = new Set(products.map(p => p.category).filter(Boolean));
     return ['all', ...Array.from(cats)];
   }, [products]);
 
+  // Bộ lọc tính toán danh sách sản phẩm hiển thị (Lọc theo Search, Category, Price Range và Sắp xếp)
   const displayProducts = useMemo(() => {
     let result = [...products];
+    
+    // 1. Lọc theo từ khóa tìm kiếm đã debounce
     if (debouncedSearch) {
       result = result.filter(p => p.name.toLowerCase().includes(debouncedSearch.toLowerCase()));
     }
+    
+    // 2. Lọc theo danh mục chuyên mục
     if (filters.category !== 'all') {
       result = result.filter(p => p.category === filters.category);
     }
+    
+    // 3. Lọc theo khoảng giá tối thiểu
     if (filters.minPrice !== '') {
       result = result.filter(p => p.price >= Number(filters.minPrice));
     }
+    
+    // 4. Lọc theo khoảng giá tối đa
     if (filters.maxPrice !== '') {
       result = result.filter(p => p.price <= Number(filters.maxPrice));
     }
+    
+    // 5. Sắp xếp giá tiền tăng/giảm dần
     if (filters.sort === 'asc') {
       result.sort((a, b) => a.price - b.price);
     } else if (filters.sort === 'desc') {
       result.sort((a, b) => b.price - a.price);
     }
+    
     return result;
   }, [products, debouncedSearch, filters]);
 
+  // Các phép toán chia trang (Pagination)
   const totalPages = Math.ceil(displayProducts.length / itemsPerPage); 
   const indexOfLastItem = currentPage * itemsPerPage; 
   const indexOfFirstItem = indexOfLastItem - itemsPerPage; 
   const currentItems = displayProducts.slice(indexOfFirstItem, indexOfLastItem);
 
+  // Điều hướng chuyển trang kèm hiệu ứng cuộn lên đầu mượt mà
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
@@ -99,17 +118,21 @@ const Products = () => {
 
   return (
     <div className="flex min-h-screen pt-20 bg-obsidian">
+      {/* Lớp nền mờ (Backdrop overlay) khi mở bộ lọc trên mobile */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setIsMobileFilterOpen(false)}></div>
       )}
 
-      {/* Sidebar */}
+      {/* Cột trái: Bộ lọc (Sidebar Filter Panel) */}
       <aside className={`w-72 shrink-0 p-6 border-r border-white/5 bg-obsidian-light
         lg:sticky lg:top-20 lg:h-[calc(100vh-80px)] lg:overflow-y-auto
         ${isMobileFilterOpen ? 'fixed top-0 left-0 bottom-0 z-50 animate-slide-in-right bg-obsidian/95 backdrop-blur-xl w-80' : 'hidden lg:block'}`}
         aria-label="Bộ lọc sản phẩm">
+        
+        {/* Nút đóng cho phiên bản Mobile */}
         <button className="lg:hidden absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-silver hover:text-ivory bg-white/5 cursor-pointer border-none" onClick={() => setIsMobileFilterOpen(false)} aria-label="Đóng">✕</button>
 
+        {/* Ô Tìm kiếm */}
         <div className="mb-6">
           <h4 className="text-ivory font-heading text-xs font-semibold uppercase tracking-widest mb-3">Tìm kiếm</h4>
           <div className="relative">
@@ -119,6 +142,7 @@ const Products = () => {
           </div>
         </div>
 
+        {/* Danh sách danh mục lựa chọn dạng Radio */}
         <div className="mb-6">
           <h4 className="text-ivory font-heading text-xs font-semibold uppercase tracking-widest mb-3">Danh mục</h4>
           <div className="space-y-1 max-h-[300px] overflow-y-auto pr-2">
@@ -136,6 +160,7 @@ const Products = () => {
           </div>
         </div>
 
+        {/* Bộ lọc khoảng giá dùng Thanh trượt kép của thư viện rc-slider */}
         <div className="mb-6">
           <h4 className="text-ivory font-heading text-xs font-semibold uppercase tracking-widest mb-3">Khoảng giá</h4>
           <div className="px-1 mb-4">
@@ -144,10 +169,12 @@ const Products = () => {
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
+              {/* Nhập giá tối thiểu bằng tay */}
               <input type="number" placeholder="Từ" value={filters.minPrice === '' ? 0 : filters.minPrice}
                 className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-ivory text-xs focus:outline-none focus:border-gold/40 transition-all"
                 onChange={(e) => { const v = Number(e.target.value); setFilters(prev => ({ ...prev, minPrice: v })); setSliderRange([v, sliderRange[1]]); }} />
               <span className="text-silver-dark text-xs">—</span>
+              {/* Nhập giá tối đa bằng tay */}
               <input type="number" placeholder="Đến" value={filters.maxPrice === '' ? MAX_PRICE : filters.maxPrice}
                 className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-ivory text-xs focus:outline-none focus:border-gold/40 transition-all"
                 onChange={(e) => { const v = Number(e.target.value); setFilters(prev => ({ ...prev, maxPrice: v })); setSliderRange([sliderRange[0], v]); }} />
@@ -157,12 +184,14 @@ const Products = () => {
         </div>
       </aside>
 
-      {/* Main */}
+      {/* Cột phải: Khu vực hiển thị danh sách sản phẩm */}
       <main className="flex-1 p-6 lg:p-8">
+        {/* Nút mở bộ lọc nhanh trên thiết bị di động */}
         <button className="lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-silver text-sm mb-6 hover:bg-white/10 transition-all cursor-pointer" onClick={() => setIsMobileFilterOpen(true)}>
           ☰ Lọc & Sắp xếp
         </button>
 
+        {/* Khối thanh đầu đề (Sắp xếp, Số lượng hiển thị) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <p className="text-silver text-sm">
             Hiển thị <strong className="text-ivory">{currentItems.length > 0 ? indexOfFirstItem + 1 : 0} - {Math.min(indexOfLastItem, displayProducts.length)}</strong> trên <strong className="text-ivory">{displayProducts.length}</strong> sản phẩm
@@ -175,6 +204,7 @@ const Products = () => {
           </select>
         </div>
 
+        {/* Hiển thị danh sách sản phẩm hoặc skeletons tải trang hoặc báo trống */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {Array.from({ length: 9 }).map((_, i) => <ProductSkeleton key={i} />)}
@@ -188,6 +218,8 @@ const Products = () => {
                 </div>
               ))}
             </div>
+            
+            {/* Thanh điều khiển phân trang */}
             {totalPages > 1 && (
               <nav className="flex items-center justify-center gap-2 mt-10" aria-label="Phân trang">
                 <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}
@@ -203,6 +235,7 @@ const Products = () => {
             )}
           </>
         ) : (
+          // Khối giao diện hiển thị khi không khớp bất kì bộ lọc nào
           <div className="text-center py-20">
             <div className="text-5xl mb-4">🔍</div>
             <h3 className="text-ivory text-xl font-heading mb-2">Không tìm thấy sản phẩm</h3>

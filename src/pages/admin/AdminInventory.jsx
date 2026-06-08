@@ -3,15 +3,21 @@ import { useOrders } from '../../contexts';
 import { fetchAllProducts } from '../../api';
 import { toast } from 'react-toastify';
 
+// Component Quản lý Kho hàng (Admin Inventory Page)
 const AdminInventory = () => {
+  // Lấy các đơn hàng để đối chiếu số lượng đã bán
   const { orders } = useOrders();
+  
+  // Các trạng thái lưu trữ danh sách sản phẩm, trạng thái tải và từ khóa tìm kiếm
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  
+  // Trạng thái quản lý việc nhập thêm hàng (Replenish Stock)
   const [adjustingProduct, setAdjustingProduct] = useState(null);
   const [newImportValue, setNewImportValue] = useState(0);
 
-  // local storage key for imported stock quantities
+  // Khởi tạo số lượng hàng đã nhập (Imported Stock) lưu trong localStorage
   const [importedStock, setImportedStock] = useState(() => {
     try {
       const stored = localStorage.getItem('admin_inventory');
@@ -21,6 +27,7 @@ const AdminInventory = () => {
     }
   });
 
+  // Tải danh sách sản phẩm (ưu tiên lấy từ danh sách tự tạo admin_products, nếu không có thì gọi API gốc)
   useEffect(() => {
     const loadProductsList = async () => {
       try {
@@ -32,7 +39,7 @@ const AdminInventory = () => {
           setProducts(apiProducts);
         }
       } catch (err) {
-        console.error('Failed to fetch products for inventory:', err);
+        console.error('Lỗi khi lấy danh sách sản phẩm quản lý kho:', err);
       } finally {
         setLoading(false);
       }
@@ -40,22 +47,23 @@ const AdminInventory = () => {
     loadProductsList();
   }, []);
 
+  // Hàm lưu trữ số lượng hàng nhập vào localStorage
   const saveImportedStock = (updatedStock) => {
     setImportedStock(updatedStock);
     localStorage.setItem('admin_inventory', JSON.stringify(updatedStock));
   };
 
-  // Helper to fetch imported supply for a product
+  // Lấy số lượng sản phẩm nhập kho (tạo giá trị ngẫu nhiên có quy luật dựa theo ID nếu chưa từng lưu)
   const getImportedQty = (prodId) => {
     if (importedStock[prodId] !== undefined) {
       return importedStock[prodId];
     }
-    // initial stock generation seed based on product ID to make it realistic
+    // Thuật toán gieo hạt (seed) tạo số lượng nhập ban đầu ngẫu nhiên từ 40 đến 159 sản phẩm
     const seed = ((prodId * 7 + 13) % 120) + 40;
     return seed;
   };
 
-  // Sum up all sold quantities from successful (paymentStatus === 'paid') orders
+  // Tổng hợp số lượng sản phẩm đã bán từ các đơn hàng ĐÃ THANH TOÁN (paymentStatus === 'paid')
   const soldQuantities = useMemo(() => {
     const map = {};
     orders.forEach(order => {
@@ -71,13 +79,15 @@ const AdminInventory = () => {
     return map;
   }, [orders]);
 
+  // Ghép nối danh sách sản phẩm với số lượng nhập, đã bán để tính số lượng còn lại trong kho
   const inventoryList = useMemo(() => {
     return products.map(p => {
       const imported = getImportedQty(p.id);
       const sold = soldQuantities[p.id] || 0;
-      const remaining = Math.max(0, imported - sold);
+      const remaining = Math.max(0, imported - sold); // Đảm bảo số tồn kho không bị âm
       
-      let status = 'in_stock'; // 'in_stock', 'low_stock', 'out_of_stock'
+      // Phân loại trạng thái kho hàng
+      let status = 'in_stock'; // 'in_stock' (còn hàng), 'low_stock' (sắp hết), 'out_of_stock' (hết hàng)
       if (remaining === 0) {
         status = 'out_of_stock';
       } else if (remaining <= 15) {
@@ -94,6 +104,7 @@ const AdminInventory = () => {
     });
   }, [products, importedStock, soldQuantities]);
 
+  // Lọc sản phẩm theo từ khóa tìm kiếm (Tên sản phẩm hoặc Chuyên mục)
   const filtered = useMemo(() => {
     if (!search.trim()) return inventoryList;
     const q = search.toLowerCase();
@@ -103,7 +114,7 @@ const AdminInventory = () => {
     );
   }, [inventoryList, search]);
 
-  // Global aggregate metrics
+  // Tính toán các chỉ số thống kê kho tổng thể (Metrics)
   const metrics = useMemo(() => {
     let totalImported = 0;
     let totalSold = 0;
@@ -122,11 +133,13 @@ const AdminInventory = () => {
     return { totalImported, totalSold, totalRemaining, lowStockCount, outOfStockCount };
   }, [inventoryList]);
 
+  // Mở Form chỉnh sửa nhập thêm hàng
   const handleAdjustImport = (product) => {
     setAdjustingProduct(product);
     setNewImportValue(product.imported);
   };
 
+  // Lưu số lượng nhập mới vào cơ sở dữ liệu giả lập (localStorage)
   const handleSaveImportValue = (e) => {
     e.preventDefault();
     if (newImportValue < 0) {
@@ -142,6 +155,7 @@ const AdminInventory = () => {
     toast.success(`📈 Đã cập nhật số lượng nhập kho cho: ${adjustingProduct.name}`);
   };
 
+  // Giao diện chờ đang tải danh sách sản phẩm
   if (loading) {
     return (
       <div className="space-y-4">
@@ -154,7 +168,7 @@ const AdminInventory = () => {
 
   return (
     <div className="space-y-6 animate-fade-in relative">
-      {/* Metrics Cards */}
+      {/* Khối các ô thẻ thống kê kho hàng (Metrics Grid) */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="glass-card rounded-2xl p-4 border border-white/[0.04] bg-white/[0.01]">
           <span className="text-[10px] text-silver-dark font-semibold uppercase tracking-wider block mb-1">Tổng Số Lượng Nhập</span>
@@ -178,7 +192,7 @@ const AdminInventory = () => {
         </div>
       </div>
 
-      {/* Toolbar */}
+      {/* Thanh công cụ tìm kiếm */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-sm w-full">
           <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,7 +208,7 @@ const AdminInventory = () => {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Bảng dữ liệu sản phẩm trong kho (Inventory Table) */}
       <div className="rounded-2xl bg-obsidian/40 border border-white/[0.06] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -265,7 +279,7 @@ const AdminInventory = () => {
         )}
       </div>
 
-      {/* Adjust Modal */}
+      {/* Modal Popup Nhập Thêm Hàng (Replenish stock Dialog) */}
       {adjustingProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
           <div className="w-full max-w-sm glass-card rounded-2xl p-6 border border-white/10 shadow-glow-gold-strong animate-scale-in relative">
@@ -319,3 +333,4 @@ const AdminInventory = () => {
 };
 
 export default AdminInventory;
+

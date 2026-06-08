@@ -3,9 +3,12 @@ import { useOrders } from '../contexts';
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../api';
 
+// Component hiển thị lịch sử đơn hàng của người dùng (Order History Page)
 const OrderHistory = () => {
+  // Lấy danh sách toàn bộ đơn hàng từ OrderContext
   const { orders } = useOrders();
 
+  // Trường hợp chưa có đơn hàng nào
   if (orders.length === 0) {
     return (
       <div className="min-h-screen pt-28 flex items-center justify-center bg-obsidian">
@@ -25,9 +28,16 @@ const OrderHistory = () => {
     <div className="min-h-screen pt-24 pb-20 bg-obsidian">
       <div className="max-w-4xl mx-auto px-6 lg:px-12">
         <h2 className="font-heading text-3xl font-bold text-ivory mb-8 animate-fade-in">Lịch sử mua hàng</h2>
+        
+        {/* Danh sách thẻ đơn hàng xếp dọc */}
         <div className="space-y-5">
           {orders.map((order, i) => (
-            <div key={order.id} className="glass-card rounded-2xl overflow-hidden animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
+            <div 
+              key={order.id} 
+              className="glass-card rounded-2xl overflow-hidden animate-fade-in-up" 
+              style={{ animationDelay: `${i * 0.1}s` }} // Hiệu ứng hiển thị so le
+            >
+              {/* Phần đầu của thẻ đơn hàng (Mã đơn, Ngày đặt, Trạng thái) */}
               <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5">
                 <div>
                   <span className="text-gold text-xs font-mono font-bold">Mã đơn: {order.id}</span>
@@ -36,6 +46,7 @@ const OrderHistory = () => {
                 <span className="px-3 py-1 rounded-full bg-gold/10 text-gold text-xs font-semibold self-start">{order.status}</span>
               </div>
               
+              {/* Danh sách các sản phẩm có trong đơn hàng này */}
               <div className="p-5 space-y-3">
                 {order.items.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3">
@@ -49,6 +60,7 @@ const OrderHistory = () => {
                 ))}
               </div>
 
+              {/* Phần chân của thẻ đơn hàng (Thông tin giao nhận & Tổng tiền) */}
               <div className="p-5 border-t border-white/5 flex flex-col sm:flex-row justify-between gap-3">
                 <div className="text-xs text-silver-dark space-y-0.5">
                   <p><strong className="text-silver">Người nhận:</strong> {order.shippingInfo.name}</p>

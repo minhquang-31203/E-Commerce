@@ -3,15 +3,19 @@ import { useParams, Link } from 'react-router-dom';
 import { useOrders } from '../../contexts';
 import { formatPrice } from '../../api';
 
+// Component thông báo Thanh toán thành công (Payment Success Page)
 const PaymentSuccess = () => {
+  // Lấy mã đơn hàng orderId từ URL params
   const { orderId } = useParams();
   const { orders } = useOrders();
 
+  // Tìm đơn hàng tương ứng khớp với ID
   const order = orders.find(o => o.id === orderId);
 
   return (
     <div className="min-h-screen pt-28 pb-20 bg-obsidian flex items-center justify-center px-6">
       <div className="text-center glass-card rounded-3xl p-10 max-w-md mx-auto animate-scale-in">
+        {/* Biểu tượng dấu tích xanh */}
         <div className="w-16 h-16 rounded-full bg-emerald/20 text-emerald flex items-center justify-center mx-auto mb-6">
           <svg fill="currentColor" viewBox="0 0 20 20" className="w-8 h-8">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
@@ -23,6 +27,7 @@ const PaymentSuccess = () => {
           Giao dịch cho đơn hàng <span className="text-gold font-mono font-bold">{orderId}</span> đã được ghi nhận.
         </p>
 
+        {/* Khối hiển thị biên lai tóm tắt đơn hàng thanh toán thành công */}
         {order && (
           <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-left text-xs mb-8 space-y-2">
             <div className="flex justify-between"><span className="text-silver-dark">Khách hàng:</span><span className="text-ivory font-medium">{order.customerName}</span></div>
@@ -31,6 +36,7 @@ const PaymentSuccess = () => {
           </div>
         )}
 
+        {/* Khối các Nút chuyển tiếp */}
         <div className="flex gap-4 justify-center">
           <Link
             to="/orders"
@@ -52,3 +58,4 @@ const PaymentSuccess = () => {
 };
 
 export default PaymentSuccess;
+

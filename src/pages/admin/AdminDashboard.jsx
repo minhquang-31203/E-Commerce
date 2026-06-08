@@ -6,21 +6,28 @@ import RevenueChart from '../../components/admin/RevenueChart';
 import TopProducts from '../../components/admin/TopProducts';
 import RecentOrders from '../../components/admin/RecentOrders';
 
+// Component Bảng điều khiển Quản trị (Admin Dashboard Page)
 const AdminDashboard = () => {
+  // Lấy danh sách toàn bộ đơn hàng từ OrderContext để tính toán số liệu thống kê
   const { orders } = useOrders();
 
-  // ── Tính toán thống kê từ dữ liệu orders thật ──
+  // ── Tính toán các chỉ số thống kê từ danh sách đơn hàng thực tế (sử dụng useMemo tối ưu hóa) ──
   const stats = useMemo(() => {
+    // Chỉ tính toán doanh thu trên các đơn hàng có trạng thái thanh toán là 'paid' (đã thanh toán)
     const paidOrders = orders.filter(o => o.paymentStatus === 'paid');
     
+    // Tính tổng doanh thu
     const totalRevenue = paidOrders.reduce((sum, order) => sum + order.total, 0);
+    // Tính tổng số lượng đơn hàng đã phát sinh trên hệ thống (bao gồm cả chưa thanh toán)
     const totalOrders = orders.length;
+    // Tính tổng số lượng sản phẩm vật lý đã bán thành công
     const totalProductsSold = paidOrders.reduce((sum, order) =>
       sum + order.items.reduce((s, item) => s + item.quantity, 0), 0
     );
+    // Tính tổng số lượng khách hàng duy nhất mua hàng (sử dụng Set để loại bỏ trùng lặp email/tên nhận hàng)
     const uniqueCustomers = new Set(orders.map(o => o.customerId || o.shippingInfo?.name)).size;
 
-    // Top sản phẩm bán chạy (chỉ lấy từ đơn hàng đã thanh toán)
+    // Tính toán Top sản phẩm bán chạy nhất
     const productMap = {};
     paidOrders.forEach(order => {
       order.items.forEach(item => {
@@ -32,16 +39,18 @@ const AdminDashboard = () => {
         productMap[key].revenue += item.price * item.quantity;
       });
     });
+    // Chuyển cấu trúc Map sang Array, sắp xếp giảm dần theo số lượng bán được và lấy 5 sản phẩm đầu
     const topProducts = Object.values(productMap)
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5);
 
+    // Lấy 10 đơn hàng mới phát sinh gần nhất
     const recentOrders = orders.slice(0, 10);
 
     return { totalRevenue, totalOrders, totalProductsSold, uniqueCustomers, topProducts, recentOrders };
   }, [orders]);
 
-  // ── Stat Cards Config ──
+  // ── Cấu hình hiển thị các thẻ Thống kê nhanh (Stat Cards Configuration) ──
   const statCards = [
     {
       label: 'Tổng doanh thu',
@@ -87,17 +96,17 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Stat Cards */}
+      {/* Hàng trên cùng: Bảng hiển thị các ô thẻ thống kê */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {statCards.map((card, i) => (
           <StatCard key={card.label} {...card} delay={i * 0.1} />
         ))}
       </div>
 
-      {/* Revenue Chart */}
+      {/* Đồ thị Thống kê Doanh thu (Revenue Chart) */}
       <RevenueChart orders={orders} />
 
-      {/* Top Products + Recent Orders */}
+      {/* Phần chia cột: Bảng xếp hạng Sản phẩm bán chạy + Lịch sử Đơn hàng gần nhất */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-2">
           <TopProducts topProducts={stats.topProducts} />
@@ -111,3 +120,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

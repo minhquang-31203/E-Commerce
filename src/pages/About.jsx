@@ -1,18 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+// Component trang Giới thiệu (About Page) hiển thị sứ mệnh, câu chuyện thương hiệu và cam kết chất lượng
 const About = () => {
   return (
     <div className="bg-obsidian min-h-screen pt-20">
       
-      {/* Hero Section */}
+      {/* Hero Section - Khối giới thiệu đầu trang */}
       <section className="relative min-h-[50vh] flex items-center justify-center overflow-hidden" aria-label="Giới thiệu thương hiệu">
-        {/* Animated Light Mesh Circles */}
+        {/* Vòng tròn lưới sáng chuyển động nền (Animated Light Mesh Circles) */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           <div className="absolute top-[-20%] right-[-10%] w-[550px] h-[550px] rounded-full bg-gold/5 blur-[110px] animate-float"></div>
           <div className="absolute bottom-[-15%] left-[-10%] w-[450px] h-[450px] rounded-full bg-sapphire/5 blur-[90px] animate-float [animation-delay:2s]"></div>
         </div>
 
+        {/* Nội dung tiêu đề chính */}
         <div className="relative z-10 text-center px-6 max-w-3xl mx-auto space-y-4 animate-fade-in-up">
           <span className="inline-block px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-gold/8 text-gold-dark border border-gold/20">
             ✨ CÂU CHUYỆN THƯƠNG HIỆU
@@ -28,9 +30,10 @@ const About = () => {
         </div>
       </section>
 
-      {/* Brand Mission & Story */}
+      {/* Sứ mệnh thương hiệu & Trình diễn ảnh */}
       <section className="max-w-6xl mx-auto px-6 lg:px-12 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Cột văn bản giới thiệu */}
           <div className="space-y-6 animate-fade-in-up text-left">
             <span className="text-[10px] font-bold text-gold uppercase tracking-wider block">SỨ MỆNH CỦA CHÚNG TÔI</span>
             <h2 className="font-heading text-3xl font-bold text-ivory">Tôn Vinh Vẻ Đẹp Nguyên Bản & An Toàn Khoa Học</h2>
@@ -48,8 +51,8 @@ const About = () => {
             </div>
           </div>
           
+          {/* Cột hình ảnh minh họa bọc kính (glassmorphism layout) */}
           <div className="relative flex justify-center animate-fade-in-up [animation-delay:0.2s]">
-            {/* Elegant glassmorphic layout container */}
             <div className="relative z-10 w-full max-w-md rounded-3xl p-3 bg-white/40 backdrop-blur-md border border-white/60 shadow-card">
               <div className="overflow-hidden rounded-2xl aspect-[4/3] bg-obsidian-light border border-gold/10">
                 <img 
@@ -64,7 +67,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* Core Values Grids */}
+      {/* Grid Giá trị cốt lõi (Core Values) */}
       <section className="max-w-6xl mx-auto px-6 lg:px-12 py-16 text-center border-t border-silver-dark/10">
         <span className="text-[10px] font-bold text-gold uppercase tracking-wider block mb-2">GIÁ TRỊ CỐT LÕI</span>
         <h2 className="font-heading text-3xl font-bold text-ivory mb-12">Cam Kết Tuyệt Đối Về Chất Lượng</h2>
@@ -87,6 +90,7 @@ const About = () => {
               desc: 'Gói quà chuẩn Boutique sang trọng, hỗ trợ tư vấn chăm sóc cá nhân hóa 24/7 và giao hàng siêu tốc, an toàn.'
             }
           ].map((v, i) => (
+            // Mỗi card giá trị cốt lõi sử dụng style delay tăng dần tạo hiệu ứng hiện mượt tuần tự (Staggered Animation)
             <div 
               key={v.title} 
               className="glass-card rounded-2xl p-6 text-center hover:border-gold/30 hover:shadow-glow-gold transition-all duration-500 group animate-fade-in-up" 
@@ -102,7 +106,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* Store Commitments & Banner */}
+      {/* Cam kết & Khối kêu gọi hành động (Call To Action - CTA) */}
       <section className="max-w-6xl mx-auto px-6 lg:px-12 py-16 border-t border-silver-dark/10">
         <div className="glass-card rounded-3xl p-8 lg:p-12 text-center relative overflow-hidden bg-gradient-to-br from-gold/5 via-transparent to-transparent">
           <div className="relative z-10 max-w-2xl mx-auto space-y-6">

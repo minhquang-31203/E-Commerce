@@ -3,13 +3,15 @@ import { useOrders } from '../../contexts';
 import { formatPrice } from '../../api';
 import { toast } from 'react-toastify';
 
+// Khởi tạo bộ lọc các bộ lọc trạng thái (Status Filter Configs)
 const STATUS_FILTERS = [
-  { label: 'All', value: 'all' },
+  { label: 'Tất cả', value: 'all' },
   { label: 'Đang xử lý', value: 'Đang xử lý' },
   { label: 'Hoàn thành', value: 'Hoàn thành' },
   { label: 'Đã hủy', value: 'Đã hủy' },
 ];
 
+// Hàm trả về lớp CSS và nhãn hiển thị Tiếng Việt cho Phương thức thanh toán
 const paymentMethodBadge = (method) => {
   const map = {
     'cod': 'bg-sapphire/15 text-sapphire border-sapphire/25',
@@ -25,6 +27,7 @@ const paymentMethodBadge = (method) => {
   };
 };
 
+// Hàm trả về lớp CSS và nhãn hiển thị Tiếng Việt cho Trạng thái thanh toán
 const paymentStatusBadge = (status) => {
   const map = {
     'unpaid': 'bg-amber/15 text-amber border-amber/25',
@@ -42,6 +45,7 @@ const paymentStatusBadge = (status) => {
   };
 };
 
+// Hàm trả về lớp CSS và nhãn hiển thị Tiếng Việt cho Trạng thái đơn hàng
 const orderStatusBadge = (status) => {
   const map = {
     'pending': 'bg-amber/15 text-amber border-amber/25',
@@ -59,15 +63,20 @@ const orderStatusBadge = (status) => {
   };
 };
 
+// Component Quản lý Đơn hàng dành cho Admin (Admin Orders Page)
 const AdminOrders = () => {
+  // Lấy danh sách đơn hàng và hàm cập nhật đơn hàng từ OrderContext
   const { orders, updateOrder } = useOrders();
   const [filter, setFilter] = useState('all');
 
+  // Lọc đơn hàng theo tab trạng thái được chọn (Tất cả / Đang xử lý / Hoàn thành / Đã hủy)
   const filtered = useMemo(() => {
     if (filter === 'all') return orders;
     return orders.filter(o => o.status === filter);
   }, [orders, filter]);
 
+  // Luân chuyển vòng lặp trạng thái đơn hàng khi Click vào badge:
+  // Chờ xử lý (pending) -> Đã xác nhận/Hoàn thành (confirmed) -> Đã hủy (cancelled) -> Chờ xử lý (pending)
   const handleToggleStatus = (orderId, currentOrderStatus) => {
     const nextMap = {
       'pending': { orderStatus: 'confirmed', status: 'Hoàn thành' },
@@ -79,6 +88,8 @@ const AdminOrders = () => {
     toast.success(`🔄 Đã cập nhật đơn ${orderId} thành "${next.status}"!`);
   };
 
+  // Luân chuyển vòng lặp trạng thái thanh toán khi Click vào badge:
+  // Chưa thanh toán (unpaid) -> Đã thanh toán (paid) -> Thất bại (failed) -> Chưa thanh toán (unpaid)
   const handleTogglePaymentStatus = (orderId, currentPaymentStatus) => {
     const nextMap = {
       'unpaid': { paymentStatus: 'paid' },
@@ -92,7 +103,7 @@ const AdminOrders = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Filter Tabs */}
+      {/* Khối các Tab bộ lọc trạng thái */}
       <div className="flex flex-wrap gap-2">
         {STATUS_FILTERS.map((f) => (
           <button
@@ -105,6 +116,7 @@ const AdminOrders = () => {
               }`}
           >
             {f.label}
+            {/* Hiển thị số lượng đơn hàng tương ứng với từng trạng thái bên cạnh nhãn tab */}
             {f.value !== 'all' && (
               <span className="ml-1.5 text-[10px] opacity-60">
                 ({orders.filter(o => o.status === f.value).length})
@@ -114,7 +126,7 @@ const AdminOrders = () => {
         ))}
       </div>
 
-      {/* Table */}
+      {/* Bảng danh sách Đơn hàng (Orders Management Table) */}
       <div className="rounded-2xl bg-obsidian/40 border border-white/[0.06] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -139,13 +151,18 @@ const AdminOrders = () => {
 
                 return (
                   <tr key={order.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+                    {/* ID đơn hàng */}
                     <td className="py-3.5 px-4">
                       <span className="text-gold text-xs font-mono font-semibold">{order.id}</span>
                     </td>
+                    
+                    {/* Tên khách hàng & Email đăng ký */}
                     <td className="py-3.5 px-4">
                       <p className="text-ivory text-xs font-medium">{order.customerName || '—'}</p>
                       <p className="text-silver-dark text-[10px]">{order.customerId || '—'}</p>
                     </td>
+                    
+                    {/* Danh sách sản phẩm tóm tắt (chỉ hiển thị tối đa 2 dòng đầu, còn lại dùng nhãn +...) */}
                     <td className="py-3.5 px-4">
                       <div className="max-w-[180px]">
                         {order.items.slice(0, 2).map((item, i) => (
@@ -154,44 +171,56 @@ const AdminOrders = () => {
                           </p>
                         ))}
                         {order.items.length > 2 && (
-                          <p className="text-silver-dark text-[10px]">+{order.items.length - 2} more</p>
+                          <p className="text-silver-dark text-[10px]">+{order.items.length - 2} sản phẩm khác</p>
                         )}
                       </div>
                     </td>
+                    
+                    {/* Giá trị đơn hàng */}
                     <td className="py-3.5 px-4">
                       <span className="text-emerald text-sm font-bold">{formatPrice(order.total)}</span>
                     </td>
+                    
+                    {/* Phương thức thanh toán (COD hoặc Online) */}
                     <td className="py-3.5 px-4">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${methodBadge.className}`}>
                         {methodBadge.label}
                       </span>
                     </td>
+                    
+                    {/* Trạng thái thanh toán (Cho phép bấm trực tiếp để luân chuyển trạng thái) */}
                     <td className="py-3.5 px-4">
                       <button
                         onClick={() => handleTogglePaymentStatus(order.id, order.paymentStatus)}
                         className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${payBadge.className} hover:scale-105 active:scale-95 transition-all cursor-pointer bg-transparent`}
-                        title="Click to toggle Payment Status"
+                        title="Bấm để thay đổi trạng thái thanh toán"
                       >
                         {payBadge.label}
                       </button>
                     </td>
+                    
+                    {/* Trạng thái xử lý đơn hàng (Cho phép bấm trực tiếp để luân chuyển trạng thái) */}
                     <td className="py-3.5 px-4">
                       <button
                         onClick={() => handleToggleStatus(order.id, order.orderStatus)}
                         className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${ordBadge.className} hover:scale-105 active:scale-95 transition-all cursor-pointer bg-transparent`}
-                        title="Click to toggle Order Status"
+                        title="Bấm để thay đổi trạng thái đơn hàng"
                       >
                         {ordBadge.label}
                       </button>
                     </td>
+                    
+                    {/* Ngày tạo đơn */}
                     <td className="py-3.5 px-4">
                       <span className="text-silver-dark text-xs">{order.date}</span>
                     </td>
+                    
+                    {/* Thao tác Xem nhanh thông tin đơn hàng */}
                     <td className="py-3.5 px-4">
                       <button
                         onClick={() => toast.info(`Đơn hàng của khách ${order.customerName} tổng cộng ${formatPrice(order.total)}`)}
                         className="p-1.5 rounded-lg bg-transparent border-none text-silver hover:text-sapphire hover:bg-sapphire/10 transition-all cursor-pointer"
-                        title="Quick View Info"
+                        title="Xem nhanh thông tin"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -220,3 +249,4 @@ const AdminOrders = () => {
 };
 
 export default AdminOrders;
+
