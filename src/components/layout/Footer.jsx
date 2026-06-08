@@ -1,18 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+// Component Chân trang (Footer) - Thiết kế tinh tế phong cách Luxury Dark
 const Footer = () => {
+  // Lấy năm hiện tại tự động hiển thị trong phần Copyright
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="relative bg-obsidian-light border-t border-silver-dark/10">
-      {/* Golden accent divider line */}
+      {/* Đường kẻ chia phần điểm nhấn màu vàng đồng (Golden accent divider line) */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent"></div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-12">
           
-          {/* Brand Column (Col Span 4) */}
+          {/* Cột 1: Thông tin thương hiệu (Brand Column) */}
           <div className="lg:col-span-4 space-y-4">
             <Link to="/" className="font-heading text-2xl font-bold tracking-wider no-underline text-ivory inline-block">
               E<span className="text-gold">Commerce</span>
@@ -20,7 +22,7 @@ const Footer = () => {
             <p className="text-silver text-xs sm:text-sm leading-relaxed max-w-sm font-light">
               Nơi định hình phong cách sống thượng lưu. Chúng tôi cung cấp những giải pháp chăm sóc da khoa học & mỹ phẩm cao cấp được thiết kế riêng cho vẻ đẹp độc bản của bạn.
             </p>
-            {/* Social Media Links with elegant hover borders */}
+            {/* Các liên kết Mạng xã hội (Social Media Links) */}
             <div className="flex gap-2.5 pt-2">
               {[
                 { label: 'Facebook', path: 'M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z' },
@@ -40,7 +42,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links Column (Col Span 2) */}
+          {/* Cột 2: Danh mục / Liên kết nhanh (Quick Links) */}
           <div className="lg:col-span-2">
             <h4 className="text-ivory font-heading text-xs font-semibold uppercase tracking-widest mb-5 flex items-center gap-2">
               <span className="w-4 h-[1px] bg-gold"></span> Danh mục
@@ -59,7 +61,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Support Column (Col Span 2) */}
+          {/* Cột 3: Hỗ trợ khách hàng (Support Policies) */}
           <div className="lg:col-span-2">
             <h4 className="text-ivory font-heading text-xs font-semibold uppercase tracking-widest mb-5 flex items-center gap-2">
               <span className="w-4 h-[1px] bg-gold"></span> Hỗ trợ
@@ -73,7 +75,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Boutique Showroom Column (Col Span 4) */}
+          {/* Cột 4: Địa chỉ Showroom & Liên hệ (Boutique Showroom info) */}
           <div className="lg:col-span-4 space-y-4 text-left">
             <h4 className="text-ivory font-heading text-xs font-semibold uppercase tracking-widest mb-5 flex items-center gap-2">
               <span className="w-4 h-[1px] bg-gold"></span> Showroom chính thức
@@ -101,7 +103,7 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Copyright Bar */}
+      {/* Dòng bản quyền (Copyright Bar) ở đáy chân trang */}
       <div className="border-t border-silver-dark/10 py-5 text-center bg-obsidian-lighter/40">
         <p className="text-silver-dark text-[10px] tracking-widest uppercase">© {currentYear} ECommerce Portal. Crafted with passion & elegance.</p>
       </div>
@@ -110,3 +112,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

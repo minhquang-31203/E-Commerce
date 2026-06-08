@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts';
 
+// Đối chiếu đường dẫn route (pathname) với tiêu đề hiển thị tương ứng
 const pageTitles = {
   '/admin/dashboard': 'Dashboard',
   '/admin/products': 'Products',
@@ -14,11 +15,13 @@ const pageTitles = {
 const AdminHeader = ({ onToggleSidebar }) => {
   const location = useLocation();
   const { user } = useAuth();
+  
+  // Xác định tiêu đề trang hiện tại, mặc định là "Admin" nếu không khớp
   const pageTitle = pageTitles[location.pathname] || 'Admin';
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-obsidian/80 backdrop-blur-xl border-b border-white/[0.06] flex items-center justify-between px-6">
-      {/* Left: hamburger + title */}
+      {/* Khối bên trái: Nút hamburger menu (chỉ hiển thị ở mobile) + Tên trang hiện tại & Ngày tháng */}
       <div className="flex items-center gap-4">
         <button
           onClick={onToggleSidebar}
@@ -30,13 +33,14 @@ const AdminHeader = ({ onToggleSidebar }) => {
         </button>
         <div>
           <h2 className="text-ivory text-lg font-heading font-bold leading-tight">{pageTitle}</h2>
+          {/* Định dạng ngày hiện tại sang tiếng Việt (Thứ..., ngày... tháng... năm...) */}
           <p className="text-silver-dark text-[10px] tracking-wider">
             {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
       </div>
 
-      {/* Right: store link + user */}
+      {/* Khối bên phải: Nút quay lại trang mua sắm + Avatar người dùng */}
       <div className="flex items-center gap-3">
         <Link
           to="/"
@@ -47,6 +51,7 @@ const AdminHeader = ({ onToggleSidebar }) => {
           </svg>
           Visit Store
         </Link>
+        {/* Avatar hiển thị chữ cái đầu tiên của tên admin */}
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/30 to-sapphire/30 flex items-center justify-center text-ivory text-xs font-bold">
           {user?.name?.charAt(0)?.toUpperCase() || 'A'}
         </div>
@@ -56,3 +61,4 @@ const AdminHeader = ({ onToggleSidebar }) => {
 };
 
 export default AdminHeader;
+

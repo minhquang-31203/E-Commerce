@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCart, useWishlist } from '../../contexts';
 import { formatPrice } from '../../api';
 
+// Component Icon Trái Tim đại diện cho trạng thái Yêu thích/Không yêu thích
 const HeartIcon = ({ isFavorite }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
@@ -18,11 +19,12 @@ const HeartIcon = ({ isFavorite }) => (
   </svg>
 );
 
-// Component hiển thị đánh giá sao
+// Component hiển thị đánh giá sao (Rating Stars)
+// Sử dụng công thức giả lập số sao dựa trên ID sản phẩm để đảm bảo tính nhất quán (không đổi sau mỗi lần render)
 const RatingStars = ({ productId }) => {
-  const rating = 3.8 + (productId % 5) * 0.25;
-  const fullStars = Math.floor(rating);
-  const hasHalf = rating - fullStars >= 0.5;
+  const rating = 3.8 + (productId % 5) * 0.25; // Giả lập điểm số từ 3.8 đến 4.8
+  const fullStars = Math.floor(rating); // Số lượng sao nguyên (full star)
+  const hasHalf = rating - fullStars >= 0.5; // Xác định xem có sao nửa (half star) không
 
   return (
     <div className="flex items-center gap-1.5 mt-1.5">
@@ -41,36 +43,43 @@ const RatingStars = ({ productId }) => {
   );
 };
 
+// Component thẻ sản phẩm chính (ProductCard)
 const ProductCard = ({ product }) => {
+  // Lấy các hàm thêm vào giỏ hàng và quản lý danh sách yêu thích
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist(); 
   
+  // Trạng thái hiển thị thông báo "Đã thêm" tạm thời trong 1.5 giây
   const [isAdded, setIsAdded] = useState(false);
   const isFavorite = isInWishlist(product.id);
 
+  // Xử lý khi nhấn nút "Thêm vào giỏ"
   const handleAddToCart = () => {
     addToCart(product);
     setIsAdded(true);
+    // Tự động chuyển nút bấm về trạng thái ban đầu sau 1500ms
     setTimeout(() => setIsAdded(false), 1500);
   };
 
+  // Xử lý khi nhấn nút Yêu thích (Trái tim)
   const handleToggleHeart = (e) => {
-    e.preventDefault(); 
+    e.preventDefault(); // Ngăn chặn sự kiện click lan truyền đến thẻ Link bao ngoài
     toggleWishlist(product);
   };
 
   return (
     <article className="group glass-card rounded-2xl overflow-hidden transition-all duration-500 hover:border-gold/30 hover:shadow-glow-gold hover:-translate-y-1">
+      {/* Vùng hình ảnh sản phẩm */}
       <div className="relative overflow-hidden aspect-square bg-surface">
         
-        {/* Discount Badge */}
+        {/* Nhãn giảm giá (Discount Badge) nếu có phần trăm giảm giá */}
         {product.discount && (
           <div className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-full bg-rose text-white text-xs font-bold shadow-lg">
             -{product.discount}%
           </div>
         )}
-
-        {/* Wishlist Button */}
+ 
+        {/* Nút Yêu thích (Wishlist Button) */}
         <button 
           className={`absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 border-none
             ${isFavorite 
@@ -82,13 +91,13 @@ const ProductCard = ({ product }) => {
         >
           <HeartIcon isFavorite={isFavorite} />
         </button>
-
-        {/* Product Image */}
+ 
+        {/* Ảnh sản phẩm (hỗ trợ hiệu ứng phóng to nhẹ khi hover) */}
         <Link to={`/product/${product.id}`}>
           <img src={product.img} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
         </Link>
-
-        {/* Quick View Overlay */}
+ 
+        {/* Lớp phủ xem nhanh khi hover chuột vào (Quick View Overlay) */}
         <Link to={`/product/${product.id}`} className="absolute inset-0 flex items-center justify-center bg-obsidian/60 opacity-0 group-hover:opacity-100 transition-all duration-300 no-underline" aria-label={`Xem chi tiết ${product.name}`}>
           <span className="px-5 py-2 rounded-full bg-gold text-obsidian font-semibold text-xs tracking-wider uppercase transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
             Xem chi tiết
@@ -96,14 +105,17 @@ const ProductCard = ({ product }) => {
         </Link>
       </div>
       
+      {/* Vùng thông tin chi tiết */}
       <div className="p-4">
+        {/* Tên sản phẩm */}
         <Link to={`/product/${product.id}`} className="no-underline">
           <h3 className="text-ivory text-sm font-medium line-clamp-2 hover:text-gold transition-colors leading-snug">{product.name}</h3>
         </Link>
         
+        {/* Đánh giá sao giả lập */}
         <RatingStars productId={product.id} />
-
-        {/* Price */}
+ 
+        {/* Giá tiền */}
         <div className="flex items-baseline gap-2 mt-2.5">
           <p className="text-gold font-bold text-base">{formatPrice(product.price)}</p>
           {product.oldPrice && (
@@ -111,6 +123,7 @@ const ProductCard = ({ product }) => {
           )}
         </div>
         
+        {/* Nút thêm vào giỏ hàng */}
         <button 
           className={`w-full mt-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide uppercase transition-all duration-300 border-none
             ${isAdded 

@@ -2,11 +2,13 @@ import React from 'react';
 import { useScrollPosition } from '../../hooks';
 
 /**
- * Nút cuộn trượt lên đầu trang — Luxury gold style
+ * Nút cuộn trượt lên đầu trang (Back to Top Button) — Phong cách Luxury Gold
  */
 const ScrollToTopButton = () => {
+  // Trạng thái hiển thị nút: chỉ xuất hiện khi người dùng cuộn xuống quá 400px
   const { isScrolled: visible } = useScrollPosition(400);
 
+  // Xử lý sự kiện cuộn mượt (smooth scroll) lên trên cùng đầu trang
   const scrollUp = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -29,3 +31,4 @@ const ScrollToTopButton = () => {
 };
 
 export default ScrollToTopButton;
+
