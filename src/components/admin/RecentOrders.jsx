@@ -1,6 +1,7 @@
 import React from 'react';
 import { formatPrice } from '../../api';
 
+// Hàm helper để gán màu sắc (CSS classes) tương ứng cho từng trạng thái đơn hàng
 const statusBadge = (status) => {
   const map = {
     'Đang xử lý': 'bg-gold/15 text-gold border-gold/25',
@@ -12,12 +13,15 @@ const statusBadge = (status) => {
   return map[status] || 'bg-white/10 text-silver border-white/15';
 };
 
+// Component hiển thị danh sách Đơn hàng gần đây nhất trong Admin Dashboard
 const RecentOrders = ({ recentOrders = [] }) => {
   return (
     <div className="rounded-2xl bg-obsidian/40 border border-white/[0.06] p-6 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
       <h3 className="text-ivory font-heading text-lg mb-5 flex items-center gap-2">
         <span className="text-sapphire">📋</span> Đơn hàng gần đây
       </h3>
+      
+      {/* Kiểm tra nếu không có đơn hàng nào (mảng rỗng) */}
       {recentOrders.length === 0 ? (
         <div className="text-center py-10">
           <p className="text-silver-dark text-sm">Chưa có đơn hàng nào</p>
@@ -39,24 +43,35 @@ const RecentOrders = ({ recentOrders = [] }) => {
             <tbody>
               {recentOrders.map((order) => (
                 <tr key={order.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+                  {/* Mã đơn hàng định dạng Monospace */}
                   <td className="py-3.5 pr-4">
                     <span className="text-gold text-xs font-mono font-semibold">{order.id}</span>
                   </td>
+                  
+                  {/* Tên khách hàng & Email nhận dạng */}
                   <td className="py-3.5 pr-4">
                     <p className="text-ivory text-xs font-medium">{order.customerName || order.shippingInfo?.name || '—'}</p>
                     <p className="text-silver-dark text-[10px]">{order.customerId || '—'}</p>
                   </td>
+                  
+                  {/* Tính tổng số lượng sản phẩm trong đơn hàng bằng hàm reduce */}
                   <td className="py-3.5 pr-4">
                     <span className="text-silver text-xs">{order.items.reduce((s, i) => s + i.quantity, 0)} SP</span>
                   </td>
+                  
+                  {/* Tổng số tiền hóa đơn đã định dạng tiền tệ */}
                   <td className="py-3.5 pr-4">
                     <span className="text-emerald text-xs font-bold">{formatPrice(order.total)}</span>
                   </td>
+                  
+                  {/* Huy hiệu trạng thái đơn hàng */}
                   <td className="py-3.5 pr-4">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${statusBadge(order.status)}`}>
                       {order.status}
                     </span>
                   </td>
+                  
+                  {/* Ngày đặt hàng */}
                   <td className="py-3.5">
                     <span className="text-silver-dark text-xs">{order.date}</span>
                   </td>
@@ -71,3 +86,4 @@ const RecentOrders = ({ recentOrders = [] }) => {
 };
 
 export default RecentOrders;
+

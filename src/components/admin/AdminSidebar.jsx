@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts';
 
+// Cấu hình các mục điều hướng trên Sidebar (Menu Items) kèm theo các SVG Icon tương ứng
 const menuItems = [
   {
     label: 'Dashboard',
@@ -60,18 +61,20 @@ const menuItems = [
   },
 ];
 
+// Component thanh điều hướng cạnh bên dành cho Admin (Admin Sidebar)
 const AdminSidebar = ({ isOpen, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  // Xử lý đăng xuất tài khoản admin
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/login'); // Chuyển hướng người dùng về trang đăng nhập
   };
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Lớp nền mờ (Overlay) khi mở sidebar trên thiết bị di động */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-40 lg:hidden"
@@ -79,13 +82,13 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Khung Sidebar chính */}
       <aside
         className={`fixed top-0 left-0 z-50 h-screen w-64 bg-obsidian border-r border-white/[0.06] flex flex-col transition-transform duration-300 ease-in-out
           lg:translate-x-0 lg:static lg:z-auto
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
-        {/* Logo */}
+        {/* Vùng Logo & Thương hiệu */}
         <div className="h-16 flex items-center gap-3 px-5 border-b border-white/[0.06] shrink-0">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center shrink-0">
             <svg className="w-5 h-5 text-obsidian" fill="currentColor" viewBox="0 0 20 20">
@@ -96,7 +99,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
             <h1 className="text-ivory text-sm font-heading font-bold leading-tight truncate">ECommerce</h1>
             <p className="text-silver-dark text-[9px] tracking-widest uppercase">Admin Panel</p>
           </div>
-          {/* Mobile close button */}
+          {/* Nút đóng Sidebar nhanh (chỉ hiển thị trên mobile) */}
           <button onClick={onClose} className="ml-auto lg:hidden text-silver-dark hover:text-ivory bg-transparent border-none p-1">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -104,18 +107,18 @@ const AdminSidebar = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Navigation */}
+        {/* Danh sách menu điều hướng (Navigation links) */}
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <div className="space-y-1">
             {menuItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
-                onClick={onClose}
+                onClick={onClose} // Tự động đóng sidebar sau khi bấm chọn liên kết (áp dụng cho mobile)
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 no-underline
                   ${isActive
-                    ? 'bg-gold/10 text-gold shadow-[inset_0_0_0_1px_rgba(212,175,55,0.15)]'
+                    ? 'bg-gold/10 text-gold shadow-[inset_0_0_0_1px_rgba(212,175,55,0.15)]' // Trạng thái Active nổi bật với màu vàng gold
                     : 'text-silver hover:text-ivory hover:bg-white/[0.04]'
                   }`
                 }
@@ -127,7 +130,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
           </div>
         </nav>
 
-        {/* User + Logout */}
+        {/* Thông tin User & Nút đăng xuất (User session info) */}
         <div className="p-3 border-t border-white/[0.06] shrink-0">
           <div className="flex items-center gap-3 px-3 py-2 mb-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/30 to-sapphire/30 flex items-center justify-center text-ivory text-xs font-bold shrink-0">
@@ -154,3 +157,4 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 };
 
 export default AdminSidebar;
+
