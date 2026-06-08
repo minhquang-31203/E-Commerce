@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { fetchAllProducts, fetchProductsByCategories, fetchProductById } from '../api';
 
 /**
- * Hook quản lý việc fetch và cache dữ liệu sản phẩm
- * Thay thế logic fetch trùng lặp ở Home.jsx và Products.jsx
+ * Hook quản lý việc gọi API lấy danh sách/chi tiết sản phẩm và lưu trạng thái tải (Loading) / lỗi (Error)
+ * Đóng gói logic gọi API lặp đi lặp lại ở Home.jsx và Products.jsx.
  * 
- * @param {'all' | 'categories' | 'single'} mode - Kiểu fetch
- * @param {*} param - ID (single) hoặc array categories
+ * @param {'all' | 'categories' | 'single'} mode - Chế độ tải dữ liệu
+ * @param {*} param - ID sản phẩm (khi mode='single') hoặc danh sách chuyên mục (khi mode='categories')
  */
 const useProducts = (mode = 'all', param = null) => {
   const [products, setProducts] = useState([]);
@@ -14,6 +14,8 @@ const useProducts = (mode = 'all', param = null) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Biến cờ hiệu (cleanup flag) để phát hiện component đã bị hủy kích hoạt (unmount)
+    // Giúp phòng ngừa lỗi cập nhật State trên một component không còn hiển thị (Memory Leak / Race Condition)
     let cancelled = false;
 
     const loadProducts = async () => {
@@ -23,13 +25,14 @@ const useProducts = (mode = 'all', param = null) => {
       try {
         let data;
 
+        // Lựa chọn hàm gọi API tương ứng với chế độ được cấu hình
         switch (mode) {
           case 'categories':
             data = await fetchProductsByCategories(param || undefined);
             break;
           case 'single':
             data = await fetchProductById(param);
-            // Single product returns object, wrap in array for consistency
+            // API lấy sản phẩm đơn lẻ trả về 1 Object, bọc lại thành mảng [Object] để đồng bộ kiểu dữ liệu
             data = [data];
             break;
           case 'all':
@@ -38,13 +41,14 @@ const useProducts = (mode = 'all', param = null) => {
             break;
         }
 
+        // Chỉ cập nhật State nếu component vẫn đang được gắn trên cây DOM
         if (!cancelled) {
           setProducts(data);
         }
       } catch (err) {
         if (!cancelled) {
           setError(err.message);
-          console.error('[useProducts]', err);
+          console.error('[useProducts] Xảy ra lỗi khi tải sản phẩm:', err);
         }
       } finally {
         if (!cancelled) {
@@ -55,6 +59,7 @@ const useProducts = (mode = 'all', param = null) => {
 
     loadProducts();
 
+    // Hàm Cleanup: Sẽ tự động chạy khi component bị hủy (unmount) hoặc tham số dependencies thay đổi
     return () => {
       cancelled = true;
     };
@@ -64,3 +69,4 @@ const useProducts = (mode = 'all', param = null) => {
 };
 
 export default useProducts;
+
